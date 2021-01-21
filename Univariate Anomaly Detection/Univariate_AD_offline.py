@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 21 13:12:03 2021
+
+@author: jane_hsieh
+
+Goal: Find out the potential anomalies of variable –"Tran Count", and visualize the results
+        Here we use a person's bank account transaction record, in the case of Japan
+
+Resource:
+    1. For simple univariate anomaly detection, we can refer to the following for tutorial:
+        https://www.ericsson.com/en/blog/2020/4/anomaly-detection-with-machine-learning
+"""
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+data_dir = './Data'
+
+#change your current working directory
+os.chdir('/Users/jane_hsieh/OneDrive - nctu.edu.tw/Data Science Analysis Templates/Anomaly Detection/Univariate Anomaly Detection')
+os.getcwd()
+
+# ====================================  0. Input data: FRM prices ====================================================
+# parameters -----------------------------------#-
+country = 'USA' #'Japan', 'Australia', 'USA'          #-
+# ----------------------------------------------#-
+
+df =  pd.read_excel(data_dir+'/Overseas spend(WH).xlsx', sheet_name=country,  parse_dates=['CPD Date'], index_col = 'CPD Date')
+
+#0.1 Reorganize data
+df.sort_index(inplace=True) 
+
+print('The earliest date of data is:\t', df.index.min())
+print('The latest date of data is:\t', df.index.max())
+
+### reset Datetime index from earliest to latest date (daily), in case of missing dates
+df = df.reindex(pd.date_range(df.index.min(), df.index.max(), freq = 'D'))
+
+### Check if any missing date (missing data)
+print('Check if any missing data in each variable:\n',df.isnull().sum())
+'''
+Fortunately, there's no missing data! Now we have a series of data from 2017-11-01 to 2019-06-30 '
+'''
+
+#df['Tran Count'].plot(figsize=(30,10))
+#plt.show()
+
+# ====================================  1. Anomaly Detection: Find Anomalies Using Mean +/- 1.96*SD ====================================================
+# 1.1 Calculate the past statistics (mean, std), with a window size (i.e., past window days [including current day] of data would be summarized)
+# Note: to reduce lag effect, instead of using 'past window', you can use the window centored at current day (center=True)
+
+# parameters -----------------------------------#-
+window = 31                                    #-
+centered =   True # or False                      #-
+# ----------------------------------------------#-
+#rolling_stats = df['Tran Count'].rolling(window).agg(['mean', 'std'])  
+rolling_stats = df['Tran Count'].rolling(window, center=centered).agg(['mean', 'std'])  #<<<<<<<<<<<<<<<<<<<<<<<
+df2 = df.join(rolling_stats)  #combine the column-wise data into df  
+
+df2['Upper_SD'] = df2['mean'] + 1.96* df2['std']  #upper bound of 95% confidence interval
+df2['Lower_SD'] = df2['mean'] - 1.96* df2['std']  #lower bound of 95% confidence interval
+
+## Find possiblee anomalies by Mean +/- 1.96*SD
+def Is_Anomaly(x):
+    if  pd.isna(x[['Tran Count', 'mean','std']]).sum() >0:
+        return np.nan
+    z = abs(x['Tran Count'] - x['mean'])/x['std']
+    if z > 1.96:
+        return 1  # outlier
+    else:
+        return 0  # normal
+    
+anomalies = df2.apply(Is_Anomaly, axis=1) 
+anomalies.name = 'anomalies'
+print('The percentage of anomalies in data is {:.2f}%'.format(np.mean(anomalies)*100))
+
+df2 = df2.join(anomalies)   
+
+
+# 1.2. Visualization of the results -----------------------------------------------------------------
+anomalies = df2[df2['anomalies']==1]
+
+fig, ax = plt.subplots(figsize=(30,10))
+ax.plot(df2.index, df2['Tran Count'], linestyle = '-', color='b', label='Tran Count')
+ax.plot(df2.index, df2['mean'], linestyle = '-', color='r', label='Mean')
+ax.plot(df2.index, df2['Upper_SD'], linestyle = '--', color='g', label = r'Mean $\pm$ 1.96*SD')
+ax.plot(df2.index, df2['Lower_SD'], linestyle = '--', color='g')
+ax.scatter( anomalies.index, anomalies['Tran Count'], color = 'r' )
+#legend = ax.legend(loc="upper right", edgecolor="black")
+#legend.get_frame().set_alpha(None)
+#legend.get_frame().set_facecolor((0, 0, 0, 0))
+#ax.set_title(f'{country} - TS plot detecting anomalies with windowsize {window} (center={str(centered)})')
+plt.show()
+plt.savefig(f'{country} - TS plot detecting anomalies with windowsize {window} (center={str(centered)}).png', transparent=True) #<<<<<<<<<<<<<<<<<<<<<<<
+    
+
+'''
+Mean and SD can change drastically due to extreme values (possible anomalies)
+To reduce the impact of extreme values, we may use Median and Median-absolute-deviation (MAD) as standards for detecting anomalies
+'''
+
+# ====================================  2. Anomaly Detection: Find Anomalies Using Median +/- 1.96*SD ====================================================
+# 1.1 Calculate the past statistics (mean, std), with a window size (i.e., past window days [including current day] of data would be summarized)
+# Note: to reduce lag effect, instead of using 'past window', you can use the window centored at current day (center=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
