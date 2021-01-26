@@ -1,4 +1,4 @@
-Name of Quantlet: 'Univariate_AD_offline'
+Name of Quantlet: 'VISAoutliers'
 
 Description: 
 - 'Find out the potential anomalies of variable –Tran Count, and visualize the results.'
