@@ -1,4 +1,4 @@
-Name of Quantlet: 'VISAoutliers'
+Name of Quantlet: 'CardSpentoutliers'
 
 Description: 
 - 'Find out the potential anomalies of variable –Tran Count, and visualize the results.'
@@ -29,5 +29,5 @@ Output:
 - 'Japan - TS plot detecting robust anomalies with windowsize 31 (center=False).png'
 
 Author: 
-- 'Jane Hsieh (Hsing-Chuan Hsieh)'
+- 'Jane Hsieh (Hsing-Chuan Hsieh)' 20220805 WKH some name changes
 
