@@ -17,11 +17,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
+# ====================================  -1. Download data ====================================================
+# Please download data from https://box.hu-berlin.de/d/0b7431e9ebd64a8487bd/;
+# The download link is password rotected. Please ask Prof. Härdle for password;
+# Create a folder called 'Data' and put the downloaded xlsx to the folder.
+
 data_dir = './Data'
 
 #change your current working directory
-os.chdir('/Users/jane_hsieh/OneDrive - nctu.edu.tw/Data Science Analysis Templates/Anomaly Detection/Univariate Anomaly Detection')
-os.getcwd()
+# os.chdir('/Users/jane_hsieh/OneDrive - nctu.edu.tw/Data Science Analysis Templates/Anomaly Detection/Univariate Anomaly Detection')
+# os.getcwd()
 
 
 # parameters -----------------------------------#-
